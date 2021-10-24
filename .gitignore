@@ -50,5 +50,3 @@ docs/html
 *.mo
 
 .python-version
-
-tests

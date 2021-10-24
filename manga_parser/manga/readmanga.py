@@ -15,12 +15,16 @@ class ReadManga(parsers.ReadMangaParser, requests.Requests):
     def manga_search(
         self,
         name: str,
+        offset: typing.Union[int, str] = 0,
         count: typing.Optional[int] = 1,
     ) -> typing.List[readmanga.MangaBriefly]:
         """
         Search for a similar manga by name.
 
+        Returns a maximum of 50 results.
+
         * :name: The name to search for similar.
+        * :offset: The manga number to start with.
         * :count: The number of manga to get. None is everything.
         * :return: The objects representing manga.
         """
@@ -28,7 +32,7 @@ class ReadManga(parsers.ReadMangaParser, requests.Requests):
             soup=self.body(
                 url=self.URL_SEARCH,
                 method="POST",
-                params={"q": name},
+                params={"q": name, "offset": offset},
             ),
             count=count,
         )
@@ -63,7 +67,6 @@ class ReadManga(parsers.ReadMangaParser, requests.Requests):
                 url=url,
             ),
             short_url=short_url,
-            url=url,
             chapters_offset=chapters_offset,
             chapters_count=chapters_count,
             chapters_primarily_new=chapters_primarily_new,
@@ -135,6 +138,9 @@ class ReadManga(parsers.ReadMangaParser, requests.Requests):
         """
         Returns information about a popular manga.
 
+        Returns a maximum of 30 results
+        (not by one request, but in general).
+
         * :offset: The manga number to start with.
         * :count: The number of manga to get. None is everything.
         * :return: The objects representing manga.
@@ -158,6 +164,8 @@ class ReadManga(parsers.ReadMangaParser, requests.Requests):
         "manga_best" and "manga_new"
         are wrappers for this function.
 
+        Returns a maximum of 70 results
+
         * :url: The url for returns the manga.
         * :offset: The manga number to start with.
         * :count: The number of manga to get. None is everything.
@@ -179,6 +187,8 @@ class ReadManga(parsers.ReadMangaParser, requests.Requests):
         """
         Returns information about the best manga.
 
+        Returns a maximum of 70 results
+
         * :offset: The manga number to start with.
         * :count: The number of manga to get. None is everything.
         * :return: The objects representing manga.
@@ -196,6 +206,8 @@ class ReadManga(parsers.ReadMangaParser, requests.Requests):
     ) -> typing.List[readmanga.MangaBriefly]:
         """
         Returns information about a new manga.
+
+        Returns a maximum of 70 results
 
         * :offset: The manga number to start with.
         * :count: The number of manga to get. None is everything.

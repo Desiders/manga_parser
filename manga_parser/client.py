@@ -99,6 +99,11 @@ class Client(BaseClient):
                     "the need for payment! "
                     "You can change the headers. "
                 ))
+            elif response.status_code == 429:
+                raise exceptions.ManyRequests((
+                    "The site returns a status_code about "
+                    "many requests from your computer! "
+                ))
             raise exceptions.BadStatusCode((
                 "The source returned the error status_code! "
                 "You may have passed some parameters incorrectly. "

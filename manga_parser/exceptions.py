@@ -65,6 +65,14 @@ class BadStatusCode(Exception):
 
 class PaymentRequired(Exception):
     """
-    If the site returns an status code about the need for payment
+    If the site returns a status code about the need for payment
+    """
+    pass
+
+
+class ManyRequests(Exception):
+    """
+    If the site returns a status code about the many requests
+    from your computer
     """
     pass

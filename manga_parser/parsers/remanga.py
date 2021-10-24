@@ -323,10 +323,14 @@ class ReMangaParser(BaseUrls):
             offset=offset,
             limit=count,
         ):
-            genres = [
-                genre["name"]
-                for genre in manga_info["genres"]
-            ]
+            genres = manga_info["genres"]
+            if genres is not None:
+                genres = [
+                    genre["name"]
+                    for genre in manga_info["genres"]
+                ]
+            else:
+                genres = []
 
             manga_short_url = manga_info["dir"]
             manga_url = urls_concat([self.URL_MANGA, manga_short_url], sep="/")

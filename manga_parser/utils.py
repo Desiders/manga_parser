@@ -1,6 +1,8 @@
 import itertools
 import typing
 
+import bs4
+
 
 def edit_start(
     iterable,
@@ -43,3 +45,18 @@ def get_short_url(url: str) -> str:
     else:
         short_url = url
     return short_url
+
+
+def get_urls(
+    tag: bs4.element.Tag,
+    url_concat: str,
+) -> typing.Tuple[str, str]:
+    href: str = tag.a["href"]
+    if href.startswith("/"):
+        short_url = href[1:]  # without "/"
+        url = urls_concat([url_concat, href])
+    else:
+        *_, short_url = href.rsplit("/", maxsplit=1)
+
+        url = href
+    return short_url, url

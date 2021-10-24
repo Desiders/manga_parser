@@ -79,6 +79,10 @@ class Manga(BaseModel):
         default=[],
         description="The manga's chapters",
     )
+    count_chapters: int = Field(
+        default=0,
+        description="The number chapters of the manga in this branch",
+    )
     similar: List[MangaBriefly] = Field(
         default=[],
         description="The similar manga",

@@ -5,7 +5,7 @@ import bs4
 
 from .. import exceptions
 from ..schemas import readmanga
-from ..utils import edit_start, limit_offset, urls_concat
+from ..utils import edit_start, get_urls, limit_offset, urls_concat
 
 
 class BaseUrls:
@@ -43,26 +43,29 @@ class ReadMangaParser(BaseUrls):
             raise exceptions.MangaNotFound((
                 "The manga not found! "
                 "Check the correctness of the name that you passed. "
+                "You may have specified too large offset! "
             ))
 
         manga = []
-        for page_element in limit_offset(
+        for tag in limit_offset(
             iterable=content.find_all(class_="img"),
             offset=0,
             limit=count,
         ):
-            page_element: bs4.element.PageElement
+            tag: bs4.element.Tag
 
-            name = page_element.find_next(name="h3").a.string
+            name = tag.find_next(name="h3").a.string
 
-            short_url = page_element.a["href"]
-            url = urls_concat([self.URL_SITE, short_url])
+            short_url, url = get_urls(tag, self.URL_SITE)
+
+            photo = tag.a.find_next()["data-original"]
 
             manga.append(
                 readmanga.MangaBriefly(
                     name=name,
-                    short_url=short_url[1:],  # without "/"
+                    short_url=short_url,
                     url=url,
+                    photo=photo,
                 )
             )
 
@@ -72,7 +75,6 @@ class ReadMangaParser(BaseUrls):
         self,
         soup: bs4.BeautifulSoup,
         short_url: str,
-        url: str,
         chapters_offset: int = 0,
         chapters_count: typing.Optional[int] = None,
         chapters_primarily_new: bool = True,
@@ -150,7 +152,7 @@ class ReadMangaParser(BaseUrls):
             publisher: bs4.element.Tag
 
             manga.setdefault("elem_publisher", []).append(
-                publisher.a.string.strip(", "),
+                publisher.string.strip(", "),
             )
 
         # translators
@@ -159,16 +161,16 @@ class ReadMangaParser(BaseUrls):
 
             name = translator.a.string
 
-            short_url = translator.a["href"]
-            url = urls_concat([
-                self.URL_SITE, short_url,
+            translator_short_url = translator.a["href"]
+            translator_url = urls_concat([
+                self.URL_SITE, translator_short_url,
             ])
 
             manga.setdefault("elem_translator", []).append(
                 readmanga.TranslatorBriefly(
                     name=name,
-                    short_url=short_url[1:],  # without "/"
-                    url=url,
+                    short_url=translator_short_url[1:],  # without "/"
+                    url=translator_url,
                 ),
             )
 
@@ -179,6 +181,9 @@ class ReadMangaParser(BaseUrls):
                 lambda tag: tag.parent.name != "thead",
                 recursive=False,
             ).find_next_siblings()
+
+            manga["count_chapters"] = len(chapters)
+
             for page_element in limit_offset(
                 iterable=edit_start(
                     iterable=chapters,
@@ -188,12 +193,13 @@ class ReadMangaParser(BaseUrls):
                 limit=chapters_count,
             ):
                 page_element: bs4.element.Tag
+
                 if page_element.td.has_attr("rowspan"):
                     page_element.td.decompose()
 
                 name = page_element.a.text.strip(" \n")
 
-                url = urls_concat([
+                chapter_url = urls_concat([
                     self.URL_SITE, page_element.a["href"],
                 ])
 
@@ -209,7 +215,7 @@ class ReadMangaParser(BaseUrls):
                 manga.setdefault("chapters", []).append(
                     readmanga.Chapter(
                         name=name,
-                        url=url,
+                        url=chapter_url,
                         translator=translator,
                         date=date,
                     )
@@ -222,20 +228,21 @@ class ReadMangaParser(BaseUrls):
 
             name = similar.a.text.strip()
 
-            short_url = similar.a["href"]
-            url = urls_concat([self.URL_SITE, short_url])
+            similar_short_url, similar_url = get_urls(tag, self.URL_SITE)
+
+            photo = similar.span["rel"]
 
             manga.setdefault("similar", []).append(
                 readmanga.MangaBriefly(
                     name=name,
-                    short_url=short_url[1:],  # without "/"
-                    url=url,
+                    short_url=similar_short_url,
+                    url=similar_url,
+                    photo=photo,
                 )
             )
 
         return readmanga.Manga(
             short_url=short_url,
-            url=url,
             **manga,
         )
 
@@ -350,16 +357,16 @@ class ReadMangaParser(BaseUrls):
 
             name = work.find_next(name="h3").a.string
 
-            short_url = work.a["href"]
-            url = urls_concat([
-                self.URL_SITE, short_url,
-            ])
+            work_short_url, work_url = get_urls(work, self.URL_SITE)
+
+            photo = work.a.find_next()["data-original"]
 
             translator.setdefault("works", []).append(
                 readmanga.MangaBriefly(
                     name=name,
-                    short_url=short_url[1:],  # without "/"
-                    url=url,
+                    short_url=work_short_url,
+                    url=work_url,
+                    photo=photo,
                 )
             )
 
@@ -395,16 +402,16 @@ class ReadMangaParser(BaseUrls):
 
             name = popular.find_next(name="h3").a.string
 
-            short_url = popular.a["href"]
-            url = urls_concat([
-                self.URL_SITE, short_url,
-            ])
+            short_url, url = get_urls(popular, self.URL_SITE)
+
+            photo = popular.a.find_next()["data-original"]
 
             manga.append(
                 readmanga.MangaBriefly(
                     name=name,
-                    short_url=short_url[1:],  # without "/"
+                    short_url=short_url,
                     url=url,
+                    photo=photo,
                 )
             )
 
@@ -435,16 +442,16 @@ class ReadMangaParser(BaseUrls):
 
             name = manga_info.find_next(name="h3").a.string
 
-            short_url = manga_info.a["href"]
-            url = urls_concat([
-                self.URL_SITE, short_url,
-            ])
+            short_url, url = get_urls(manga_info, self.URL_SITE)
+
+            photo = manga_info.a.find_next()["data-original"]
 
             manga.append(
                 readmanga.MangaBriefly(
                     name=name,
-                    short_url=short_url[1:],  # without "/"
+                    short_url=short_url,
                     url=url,
+                    photo=photo,
                 )
             )
 

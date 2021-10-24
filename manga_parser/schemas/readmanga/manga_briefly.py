@@ -15,3 +15,6 @@ class MangaBriefly(BaseModel):
     url: str = Field(
         description="The manga's url",
     )
+    photo: str = Field(
+        description="The manga's photo",
+    )
