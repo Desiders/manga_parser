@@ -1,4 +1,4 @@
-from manga_parser.urls.urls import Urls
+from manga_parser.urls.base import Urls
 
 
 class RemangaUrls(Urls):

@@ -3,6 +3,11 @@ from typing import Callable, Optional, Union
 from manga_parser.client.base import Response
 from manga_parser.exceptions.remanga.client import (
     NeedAuthorizhationForViewManga, NeedPaymentForUsingSite)
+from manga_parser.parsers.remanga.helper import (age_limit_id_by_raw,
+                                                 category_id_by_raw,
+                                                 genre_id_by_raw,
+                                                 status_id_by_raw,
+                                                 title_type_id_by_raw)
 from manga_parser.requests.requests import Requests
 from manga_parser.schemas.remanga import (AgeLimit, Branch, Category, Chapter,
                                           Genre, Status, TitleType)
@@ -14,14 +19,9 @@ from manga_parser.typehints.remanga import (AgeLimitTypes, AgeLimitTypesRaw,
                                             StatusTypes, StatusTypesRaw,
                                             TitleTypeTypes, TitleTypeTypesRaw)
 from manga_parser.urls.remanga.urls import RemangaApiUrls, RemangaUrls
-from manga_parser.utils.helper.remanga import (age_limit_id_by_raw,
-                                               category_id_by_raw,
-                                               genre_id_by_raw,
-                                               status_id_by_raw,
-                                               title_type_id_by_raw)
-from manga_parser.utils.urls import (get_chapter_id_from_chapter_url,
-                                     get_chapter_id_from_url, get_short_url,
-                                     is_chapter_url, is_url, urls_concat)
+from manga_parser.urls.urls import (get_chapter_id_from_chapter_url,
+                                    get_chapter_id_from_url, get_short_url,
+                                    is_chapter_url, is_url, urls_concat)
 
 
 def unpacking_params_to_ids(
@@ -215,6 +215,8 @@ class RemangaRequests(Requests):
     def manga_search(self, name: str, count: Union[int, str] = 1) -> Response:
         """
         Search the manga by name
+
+        Site doesn't responsibility to return the transmitted amount of manga.
 
         :name:
         :count:

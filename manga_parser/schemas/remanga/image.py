@@ -2,22 +2,22 @@ from pydantic import BaseModel, Field
 
 
 class Image(BaseModel):
-    pass
+    url: str = Field(...)
 
 
 class ImageLow(Image):
     # like "https://remanga.org/media/titles/the_beginning_after_the_end/
     # low_cover.jpg"
-    url: str = Field(...)
+    pass
 
 
 class ImageMiddle(Image):
     # like "https://remanga.org/media/titles/the_beginning_after_the_end/
     # mid_cover.jpg"
-    url: str = Field(...)
+    pass
 
 
 class ImageHigh(Image):
     # like "https://remanga.org/media/titles/the_beginning_after_the_end/
     # high_cover.jpg"
-    url: str = Field(...)
+    pass

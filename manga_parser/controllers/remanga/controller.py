@@ -32,6 +32,8 @@ class RemangaController(Controller):
         """
         Search the manga by name
 
+        Site doesn't responsibility to return the transmitted amount of manga.
+
         :name:
          The name by which the manga will be searched.
         :count:

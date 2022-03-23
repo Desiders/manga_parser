@@ -4,7 +4,7 @@ from setuptools import find_packages, setup
 setup(
     name="manga_parser",
     description="Convenient manga parser!",
-    version="1.0.0",
+    version="1.0.0.dev1",
     url="https://github.com/Desiders/manga_parser",
     author="Desiders",
     license="Apache2",

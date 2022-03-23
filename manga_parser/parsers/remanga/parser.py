@@ -8,6 +8,15 @@ from manga_parser.exceptions.remanga.manga import (ChapterNotFound,
                                                    MangaNotFound)
 from manga_parser.exceptions.remanga.publisher import PublisherNotFound
 from manga_parser.parsers.base import Parser
+from manga_parser.parsers.remanga.helper import (age_limit_by_id,
+                                                 category_by_id,
+                                                 escape_html_tags, genre_by_id,
+                                                 publisher_type_by_id,
+                                                 publisher_type_by_raw,
+                                                 rank_by_id, status_by_id,
+                                                 title_type_by_id,
+                                                 title_type_by_raw)
+from manga_parser.pre_data_edit import limit_offset, reverse
 from manga_parser.schemas.remanga import (Branch, Category, Chapter, Contacts,
                                           Genre, ImageHigh, ImageLow,
                                           ImageMiddle, MangaBriefly, MangaHigh,
@@ -15,15 +24,7 @@ from manga_parser.schemas.remanga import (Branch, Category, Chapter, Contacts,
                                           PublisherHigh, PublisherMedium,
                                           Subscription)
 from manga_parser.urls.remanga import RemangaApiUrls, RemangaUrls
-from manga_parser.utils.helper.helper import limit_offset, reverse
-from manga_parser.utils.helper.remanga import (age_limit_by_id, category_by_id,
-                                               escape_html_tags, genre_by_id,
-                                               publisher_type_by_id,
-                                               publisher_type_by_raw,
-                                               rank_by_id, status_by_id,
-                                               title_type_by_id,
-                                               title_type_by_raw)
-from manga_parser.utils.urls import urls_concat
+from manga_parser.urls.urls import urls_concat
 
 
 class RemangaParser(Parser):

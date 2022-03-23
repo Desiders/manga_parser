@@ -1,6 +1,6 @@
 from manga_parser import RemangaController, RemangaParser, RemangaRequests
-from manga_parser.utils.helper.remanga import (age_limit_by_raw,
-                                               title_type_by_raw)
+from manga_parser.parsers.remanga.helper import (age_limit_by_raw,
+                                                 title_type_by_raw)
 
 remanga_controller = RemangaController(
     requests=RemangaRequests(),
@@ -16,17 +16,17 @@ class TestRemangaControllerMethods:
         )
 
         assert isinstance(manga, list)
-        assert len(manga) == 1
+        assert 0 <= len(manga) <= 1
 
         manga = remanga_controller.manga_search(name="Клинок", count="10")
 
         assert isinstance(manga, list)
-        assert len(manga) == 10
+        assert 0 <= len(manga) <= 10
 
         manga = remanga_controller.manga_search(name="Клинок")
 
         assert isinstance(manga, list)
-        assert len(manga) == 1
+        assert 0 <= len(manga) <= 1
 
     def test_manga_new(self):
         manga_category_raw = "реинкарнация"
@@ -140,7 +140,7 @@ class TestRemangaControllerMethods:
         manga_title_type = title_type_by_raw("manga")
         manga_age_limit_raw = "0+"
         manga_age_limit = age_limit_by_raw("16+")
-        
+
         manga = remanga_controller.manga_rating(
             page=1, offset=0, limit=None,
             primarily_rating_manga=True,
@@ -156,8 +156,8 @@ class TestRemangaControllerMethods:
         #   `now_manga = manga[manga_index]`
         #   `next_manga = manga[manga_index + 1]`
         #   `assert now_manga.rating > next_manga.rating`
-        #   isn't right expression,
-        #   the site has its own algorithm for determining a place in the ranking
+        # isn't right expression,
+        # the site has its own algorithm for determining a place in the ranking
 
         for now_manga in manga:
             assert manga_category_raw in {
@@ -322,7 +322,7 @@ class TestRemangaControllerMethods:
         )
 
         assert manga_f[0].views > manga_s[0].views
-    
+
     def test_manga_count_chapters(self):
         manga_category_raw = "реинкарнация"
         manga_genre_id = 21
@@ -373,10 +373,13 @@ class TestRemangaControllerMethods:
         assert len(manga_f) == len(manga_s) == 1
 
     def test_manga_info(self):
-        manga_first = remanga_controller.manga_info(url=("https://remanga.org/manga/"
-                                                         "the_beginning_after_the_end"))
+        manga_first = remanga_controller.manga_info(
+            url="https://remanga.org/manga/the_beginning_after_the_end",
+        )
 
-        manga_second = remanga_controller.manga_info(url="the_beginning_after_the_end")
+        manga_second = remanga_controller.manga_info(
+            url="the_beginning_after_the_end",
+        )
 
         assert manga_first.id == manga_second.id
         assert manga_first.url == manga_second.url
@@ -395,7 +398,8 @@ class TestRemangaControllerMethods:
         # it's the max `count_chapters` from the branches
         count_chapters = manga.count_chapters
         for branch in manga.branches:
-            # branch's `count_chapters` might have a differ from `count_chapters` of other branches
+            # branch's `count_chapters` might have a differ
+            # from `count_chapters` of other branches
             assert branch.count_chapters <= count_chapters
 
             for publisher in branch.publishers:
@@ -413,14 +417,20 @@ class TestRemangaControllerMethods:
             now_manga_chapter = manga_chapters[manga_chapter_index]
             next_manga_chapter = manga_chapters[next_manga_chapter_index]
 
-            assert now_manga_chapter.chapter_index > next_manga_chapter.chapter_index
-            assert now_manga_chapter.upload_date > next_manga_chapter.upload_date
+            assert now_manga_chapter.chapter_index > \
+                   next_manga_chapter.chapter_index
+            assert now_manga_chapter.upload_date > \
+                   next_manga_chapter.upload_date
 
-            if now_manga_chapter.is_paid or now_manga_chapter.free_date is not None:
+            if (
+                now_manga_chapter.is_paid or
+                now_manga_chapter.free_date is not None
+            ):
                 assert now_manga_chapter.price is not None
 
             if now_manga_chapter.free_date is not None:
-                assert now_manga_chapter.upload_date < now_manga_chapter.free_date
+                assert now_manga_chapter.upload_date < \
+                       now_manga_chapter.free_date
 
         manga_chapters_new = remanga_controller.manga_chapters(
             branch=852, offset=0,
@@ -432,7 +442,9 @@ class TestRemangaControllerMethods:
             limit=3, primarily_new_chapters=False,
         )
 
-        for manga_chapter_new, manga_chapter_old in zip(manga_chapters_new, manga_chapters_old,):
+        for manga_chapter_new, manga_chapter_old in zip(
+            manga_chapters_new, manga_chapters_old,
+        ):
             manga_chapter_new.id != manga_chapter_old.id
 
         manga_chapters_f = remanga_controller.manga_chapters(
