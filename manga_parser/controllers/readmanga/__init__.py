@@ -1,0 +1,1 @@
+from manga_parser.controllers.readmanga.controller import ReadmangaController

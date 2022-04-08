@@ -1,8 +1,9 @@
 from typing import Callable, Optional, Union
 
 from manga_parser.client.base import Response
-from manga_parser.exceptions.remanga.client import (
-    NeedAuthorizhationForViewManga, NeedPaymentForUsingSite)
+from manga_parser.exceptions.client import NeedPaymentForUsingSite
+from manga_parser.exceptions.remanga.client import \
+    NeedAuthorizhationForViewManga
 from manga_parser.parsers.remanga.helper import (age_limit_id_by_raw,
                                                  category_id_by_raw,
                                                  genre_id_by_raw,
@@ -10,15 +11,20 @@ from manga_parser.parsers.remanga.helper import (age_limit_id_by_raw,
                                                  title_type_id_by_raw)
 from manga_parser.requests.requests import Requests
 from manga_parser.schemas.remanga import (AgeLimit, Branch, Category, Chapter,
-                                          Genre, Status, TitleType)
-from manga_parser.typehints.remanga import (AgeLimitTypes, AgeLimitTypesRaw,
-                                            BranchType, BranchTypeRaw,
-                                            CategoryTypes, CategoryTypesRaw,
-                                            ChapterOrUrlType, ChapterRaw,
-                                            GenreTypes, GenreTypesRaw,
-                                            StatusTypes, StatusTypesRaw,
-                                            TitleTypeTypes, TitleTypeTypesRaw)
-from manga_parser.urls.remanga.urls import RemangaApiUrls, RemangaUrls
+                                          Genre, Manga, Publisher, Status,
+                                          TitleType)
+from manga_parser.typehints.remanga import (AgeLimitsIdsType, AgeLimitsType,
+                                            BranchIdType, BranchOrIdType,
+                                            CategoriesIdsType, CategoriesType,
+                                            ChapterIdType,
+                                            ChapterOrIdOrUrlType,
+                                            GenresIdsType, GenresType,
+                                            MangaOrUrlType, MangaShortUrlType,
+                                            PublisherOrUrlType,
+                                            PublisherShortUrlType,
+                                            StatusesIdsType, StatusesType,
+                                            TitleTypesIdsType, TitleTypesType)
+from manga_parser.urls.remanga import RemangaApiUrls, RemangaUrls
 from manga_parser.urls.urls import (get_chapter_id_from_chapter_url,
                                     get_chapter_id_from_url, get_short_url,
                                     is_chapter_url, is_url, urls_concat)
@@ -28,21 +34,21 @@ def unpacking_params_to_ids(
     fn: Callable[
         ["RemangaRequests",
          str, int,
-         CategoryTypesRaw,
-         GenreTypesRaw,
-         StatusTypesRaw,
-         TitleTypeTypesRaw,
-         AgeLimitTypesRaw],
+         CategoriesIdsType,
+         GenresIdsType,
+         StatusesIdsType,
+         TitleTypesIdsType,
+         AgeLimitsIdsType],
         Response,
     ],
 ):
     def wrap(
         *args,
-        categories: CategoryTypes = None,
-        genres: GenreTypes = None,
-        statuses: StatusTypes = None,
-        title_types: TitleTypeTypes = None,
-        age_limits: AgeLimitTypes = None,
+        categories: CategoriesType = None,
+        genres: GenresType = None,
+        statuses: StatusesType = None,
+        title_types: TitleTypesType = None,
+        age_limits: AgeLimitsType = None,
         **kwargs,
     ):
         if categories:
@@ -79,7 +85,7 @@ def unpacking_params_to_ids(
                 elif isinstance(status, str):
                     status_id = status_id_by_raw(status)
                 elif isinstance(status, Status):
-                    status_id = status_id_by_raw(status.id)
+                    status_id = status.id
                 statuses_ids.append(status_id)
         else:
             statuses_ids = None
@@ -122,22 +128,50 @@ def unpacking_params_to_ids(
     return wrap
 
 
-def unpacking_branch_to_id(
+def unpacking_manga_to_id(
     fn: Callable[
         ["RemangaRequests",
-         BranchTypeRaw],
+         MangaShortUrlType],
         Response,
     ],
 ):
     def wrap(
         *args,
-        branch: BranchType,
+        manga_or_url: MangaOrUrlType,
         **kwargs,
     ):
-        if isinstance(branch, Branch):
-            branch_id = branch.id
+        if isinstance(manga_or_url, Manga):
+            short_url = manga_or_url.short_url
         else:
-            branch_id = branch
+            if is_url(manga_or_url):
+                short_url = get_short_url(manga_or_url)
+            else:
+                short_url = manga_or_url
+
+        return fn(
+            *args,
+            **kwargs,
+            short_url=short_url,
+        )
+    return wrap
+
+
+def unpacking_branch_to_id(
+    fn: Callable[
+        ["RemangaRequests",
+         BranchIdType],
+        Response,
+    ],
+):
+    def wrap(
+        *args,
+        branch_or_id: BranchOrIdType,
+        **kwargs,
+    ):
+        if isinstance(branch_or_id, Branch):
+            branch_id = branch_or_id.id
+        else:
+            branch_id = branch_or_id
 
         return fn(
             *args,
@@ -150,35 +184,63 @@ def unpacking_branch_to_id(
 def unpacking_chapter_to_id(
     fn: Callable[
         ["RemangaRequests",
-         ChapterRaw],
+         ChapterIdType],
         Response,
     ],
 ):
     def wrap(
         *args,
-        chapter_or_url: ChapterOrUrlType,
+        chapter_or_id_or_url: ChapterOrIdOrUrlType,
         **kwargs,
     ):
 
-        if isinstance(chapter_or_url, Chapter):
-            chapter_id = chapter_or_url.id
+        if isinstance(chapter_or_id_or_url, Chapter):
+            chapter_id = chapter_or_id_or_url.id
         else:
-            if isinstance(chapter_or_url, str):
-                if is_chapter_url(chapter_or_url):
+            if isinstance(chapter_or_id_or_url, str):
+                if is_chapter_url(chapter_or_id_or_url):
                     chapter_id = get_chapter_id_from_chapter_url(
-                        chapter_or_url,
+                        chapter_or_id_or_url,
                     )
-                elif is_url(chapter_or_url):
-                    chapter_id = get_chapter_id_from_url(chapter_or_url)
+                elif is_url(chapter_or_id_or_url):
+                    chapter_id = get_chapter_id_from_url(chapter_or_id_or_url)
                 else:
-                    chapter_id = chapter_or_url
+                    chapter_id = chapter_or_id_or_url
             else:
-                chapter_id = chapter_or_url
+                chapter_id = chapter_or_id_or_url
 
         return fn(
             *args,
             **kwargs,
             chapter_id=chapter_id,
+        )
+    return wrap
+
+
+def unpacking_publisher_to_id(
+    fn: Callable[
+        ["RemangaRequests",
+         PublisherShortUrlType],
+        Response,
+    ],
+):
+    def wrap(
+        *args,
+        publisher_or_url: PublisherOrUrlType,
+        **kwargs,
+    ):
+        if isinstance(publisher_or_url, Publisher):
+            short_url = publisher_or_url.short_url
+        else:
+            if is_url(publisher_or_url):
+                short_url = get_short_url(publisher_or_url)
+            else:
+                short_url = publisher_or_url
+
+        return fn(
+            *args,
+            **kwargs,
+            short_url=short_url,
         )
     return wrap
 
@@ -236,11 +298,11 @@ class RemangaRequests(Requests):
         self,
         search_type: str,
         page: int = 1,
-        categories_ids: CategoryTypesRaw = None,
-        genres_ids: GenreTypesRaw = None,
-        statuses_ids: StatusTypesRaw = None,
-        title_types_ids: TitleTypeTypesRaw = None,
-        age_limits_ids: AgeLimitTypesRaw = None,
+        categories_ids: CategoriesIdsType = None,
+        genres_ids: GenresIdsType = None,
+        statuses_ids: StatusesIdsType = None,
+        title_types_ids: TitleTypesIdsType = None,
+        age_limits_ids: AgeLimitsIdsType = None,
     ) -> Response:
         """
         Return the manga
@@ -276,11 +338,11 @@ class RemangaRequests(Requests):
     def manga_new(
         self,
         page: int = 1,
-        categories: CategoryTypes = None,
-        genres: GenreTypes = None,
-        statuses: StatusTypes = None,
-        title_types: TitleTypeTypes = None,
-        age_limits: AgeLimitTypes = None,
+        categories: CategoriesType = None,
+        genres: GenresType = None,
+        statuses: StatusesType = None,
+        title_types: TitleTypesType = None,
+        age_limits: AgeLimitsType = None,
     ) -> Response:
         return self._manga_type(
             search_type=self.urls_api.NEW.value,
@@ -295,11 +357,11 @@ class RemangaRequests(Requests):
     def manga_latest_updated(
         self,
         page: int = 1,
-        categories: CategoryTypes = None,
-        genres: GenreTypes = None,
-        statuses: StatusTypes = None,
-        title_types: TitleTypeTypes = None,
-        age_limits: AgeLimitTypes = None,
+        categories: CategoriesType = None,
+        genres: GenresType = None,
+        statuses: StatusesType = None,
+        title_types: TitleTypesType = None,
+        age_limits: AgeLimitsType = None,
     ) -> Response:
         return self._manga_type(
             search_type=self.urls_api.LATEST_UPDATED.value,
@@ -314,11 +376,11 @@ class RemangaRequests(Requests):
     def manga_rating(
         self,
         page: int = 1,
-        categories: CategoryTypes = None,
-        genres: GenreTypes = None,
-        statuses: StatusTypes = None,
-        title_types: TitleTypeTypes = None,
-        age_limits: AgeLimitTypes = None,
+        categories: CategoriesType = None,
+        genres: GenresType = None,
+        statuses: StatusesType = None,
+        title_types: TitleTypesType = None,
+        age_limits: AgeLimitsType = None,
     ) -> Response:
         return self._manga_type(
             search_type=self.urls_api.RATING.value,
@@ -333,11 +395,11 @@ class RemangaRequests(Requests):
     def manga_liked(
         self,
         page: int = 1,
-        categories: CategoryTypes = None,
-        genres: GenreTypes = None,
-        statuses: StatusTypes = None,
-        title_types: TitleTypeTypes = None,
-        age_limits: AgeLimitTypes = None,
+        categories: CategoriesType = None,
+        genres: GenresType = None,
+        statuses: StatusesType = None,
+        title_types: TitleTypesType = None,
+        age_limits: AgeLimitsType = None,
     ) -> Response:
         return self._manga_type(
             search_type=self.urls_api.LIKED.value,
@@ -352,11 +414,11 @@ class RemangaRequests(Requests):
     def manga_viewed(
         self,
         page: int = 1,
-        categories: CategoryTypes = None,
-        genres: GenreTypes = None,
-        statuses: StatusTypes = None,
-        title_types: TitleTypeTypes = None,
-        age_limits: AgeLimitTypes = None,
+        categories: CategoriesType = None,
+        genres: GenresType = None,
+        statuses: StatusesType = None,
+        title_types: TitleTypesType = None,
+        age_limits: AgeLimitsType = None,
     ) -> Response:
         return self._manga_type(
             search_type=self.urls_api.VIEWED.value,
@@ -371,11 +433,11 @@ class RemangaRequests(Requests):
     def manga_count_chapters(
         self,
         page: int = 1,
-        categories: CategoryTypes = None,
-        genres: GenreTypes = None,
-        statuses: StatusTypes = None,
-        title_types: TitleTypeTypes = None,
-        age_limits: AgeLimitTypes = None,
+        categories: CategoriesType = None,
+        genres: GenresType = None,
+        statuses: StatusesType = None,
+        title_types: TitleTypesType = None,
+        age_limits: AgeLimitsType = None,
     ) -> Response:
         return self._manga_type(
             search_type=self.urls_api.COUNT_CHAPTERS.value,
@@ -390,11 +452,11 @@ class RemangaRequests(Requests):
     def manga_random(
         self,
         page: int = 1,
-        categories: CategoryTypes = None,
-        genres: GenreTypes = None,
-        statuses: StatusTypes = None,
-        title_types: TitleTypeTypes = None,
-        age_limits: AgeLimitTypes = None,
+        categories: CategoriesType = None,
+        genres: GenresType = None,
+        statuses: StatusesType = None,
+        title_types: TitleTypesType = None,
+        age_limits: AgeLimitsType = None,
     ) -> Response:
         return self._manga_type(
             search_type=self.urls_api.RANDOM.value,
@@ -406,17 +468,13 @@ class RemangaRequests(Requests):
             age_limits=age_limits,
         )
 
-    def manga_info(self, url: str) -> Response:
+    @unpacking_manga_to_id
+    def manga_info(self, short_url: MangaShortUrlType) -> Response:
         """
         Return the manga's information
 
-        :url:
+        :short_url:
         """
-        if is_url(url):
-            short_url = get_short_url(url)
-        else:
-            short_url = url
-
         return self.request(
             url=urls_concat(
                 self.urls_api.SITE.value,
@@ -428,7 +486,7 @@ class RemangaRequests(Requests):
         )
 
     @unpacking_branch_to_id
-    def manga_chapters(self, branch_id: BranchTypeRaw) -> Response:
+    def manga_chapters(self, branch_id: BranchIdType) -> Response:
         """
         Return the manga's chapters
 
@@ -445,7 +503,7 @@ class RemangaRequests(Requests):
         )
 
     @unpacking_chapter_to_id
-    def chapter_pages(self, chapter_id: ChapterRaw) -> Response:
+    def chapter_pages(self, chapter_id: ChapterIdType) -> Response:
         """
         Return the chapter's pages
 
@@ -461,14 +519,13 @@ class RemangaRequests(Requests):
             method="GET",
         )
 
-    def publisher_info(self, url: str) -> Response:
+    @unpacking_publisher_to_id
+    def publisher_info(self, short_url: PublisherShortUrlType) -> Response:
         """
         Return the publisher's information
 
-        :url:
+        :short_url:
         """
-        short_url = get_short_url(url)
-
         return self.request(
             url=urls_concat(
                 self.urls_api.SITE.value,

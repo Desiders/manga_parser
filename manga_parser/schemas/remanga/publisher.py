@@ -11,6 +11,10 @@ from pydantic import BaseModel, Field
 class Publisher(BaseModel):
     # like 891
     id: int = Field(...)
+    # like "891"
+    short_url: str = Field(...)
+    # like "https://remanga.org/team/891"
+    url: str = Field(...)
 
 
 class PublisherMedium(Publisher):
@@ -19,10 +23,6 @@ class PublisherMedium(Publisher):
     # like "Всё что мы делаем - это поступок..."
     short_description: Optional[str] = Field(...)
     publisher_type: PublisherType = Field(...)
-    # like "891"
-    short_url: str = Field(...)
-    # like "https://remanga.org/team/891"
-    url: str = Field(...)
     image: ImageLow = Field(...)
 
 

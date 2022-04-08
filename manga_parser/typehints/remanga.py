@@ -1,36 +1,50 @@
-from typing import Optional, Sequence, Union
+from typing import Optional, Sequence, Type, Union
 
 from manga_parser.schemas.remanga import (AgeLimit, Branch, Category, Chapter,
-                                          Genre, Status, TitleType)
+                                          Genre, Publisher, Status, TitleType)
+from manga_parser.schemas.remanga.manga import Manga
 
-CategoryTypeRaw = Union[int, str]
-CategoryTypesRaw = Optional[Sequence[CategoryTypeRaw]]
-CategoryType = Union[CategoryTypeRaw, Category]
-CategoryTypes = Optional[Sequence[CategoryType]]
+CategoryIdType = Union[int, str]
+CategoriesIdsType = Optional[Sequence[CategoryIdType]]
+CategoryType = Union[CategoryIdType, Category]
+CategoriesType = Optional[Sequence[CategoryType]]
 
-GenreTypeRaw = Union[int, str]
-GenreTypesRaw = Optional[Sequence[GenreTypeRaw]]
-GenreType = Union[GenreTypeRaw, Genre]
-GenreTypes = Optional[Sequence[GenreType]]
+GenreIdType = Union[int, str]
+GenresIdsType = Optional[Sequence[GenreIdType]]
+GenreType = Union[GenreIdType, Genre]
+GenresType = Optional[Sequence[GenreType]]
 
-StatusTypeRaw = Union[int, str]
-StatusTypesRaw = Optional[Sequence[StatusTypeRaw]]
-StatusType = Union[StatusTypeRaw, Status]
-StatusTypes = Optional[Sequence[StatusType]]
+StatusIdType = Union[int, str]
+StatusesIdsType = Optional[Sequence[StatusIdType]]
+StatusType = Union[StatusIdType, Status]
+StatusesType = Optional[Sequence[StatusType]]
 
-TitleTypeTypeRaw = Union[int, str]
-TitleTypeTypesRaw = Optional[Sequence[TitleTypeTypeRaw]]
-TitleTypeType = Union[TitleTypeTypeRaw, TitleType]
-TitleTypeTypes = Optional[Sequence[TitleTypeType]]
+TitleTypeIdType = Union[int, str]
+TitleTypesIdsType = Optional[Sequence[TitleTypeIdType]]
+TitleTypeType = Union[TitleTypeIdType, TitleType]
+TitleTypesType = Optional[Sequence[TitleTypeType]]
 
-AgeLimitTypeRaw = Union[int, str]
-AgeLimitTypesRaw = Optional[Sequence[AgeLimitTypeRaw]]
+AgeLimitIdType = Union[int, str]
+AgeLimitsIdsType = Optional[Sequence[AgeLimitIdType]]
 AgeLimitType = Union[int, str, AgeLimit]
-AgeLimitTypes = Optional[Sequence[AgeLimitType]]
+AgeLimitsType = Optional[Sequence[AgeLimitType]]
 
-BranchTypeRaw = Union[int, str]
-BranchType = Union[BranchTypeRaw, Branch]
+BranchIdType = Union[int, str]
+BranchOrIdType = Union[BranchIdType, Branch]
 
-ChapterRaw = Union[int, str]
-ChapterOrUrlRaw = Union[int, str]
-ChapterOrUrlType = Union[ChapterOrUrlRaw, Chapter]
+ChapterIdType = Union[int, str]
+ChapterUrlType = str
+ChapterShortUrlType = str
+ChapterOrIdOrUrlType = Union[
+    ChapterIdType, ChapterUrlType, ChapterShortUrlType, Chapter,
+]
+
+MangaUrlType = str
+MangaShortUrlType = str
+MangaOrUrlType = Union[MangaUrlType, MangaShortUrlType, Type[Manga]]
+
+PublisherUrlType = str
+PublisherShortUrlType = str
+PublisherOrUrlType = Union[
+    PublisherUrlType, PublisherShortUrlType, Type[Publisher],
+]

@@ -14,6 +14,10 @@ from pydantic import BaseModel, Field
 class Manga(BaseModel):
     # like 938
     id: int = Field(...)
+    # "the_beginning_after_the_end"
+    short_url: str = Field(...)
+    # like "https://remanga.org/api/titles/the_beginning_after_the_end"
+    url: str = Field(...)
 
 
 class MangaBriefly(Manga):
@@ -21,10 +25,6 @@ class MangaBriefly(Manga):
     en_name: str = Field(...)
     # like "Начало после конца"
     ru_name: str = Field(...)
-    # "the_beginning_after_the_end"
-    short_url: str = Field(...)
-    # like "https://remanga.org/api/titles/the_beginning_after_the_end"
-    url: str = Field(...)
     title_type: TitleType = Field(...)
     images: tuple[ImageLow, ImageMiddle, ImageHigh] = Field(...)
     # like 2018
@@ -42,10 +42,6 @@ class MangaMedium(Manga):
     en_name: str = Field(...)
     # like "Начало после конца"
     ru_name: str = Field(...)
-    # "the_beginning_after_the_end"
-    short_url: str = Field(...)
-    # like "https://remanga.org/api/titles/the_beginning_after_the_end"
-    url: str = Field(...)
     title_type: TitleType = Field(...)
     images: tuple[ImageLow, ImageMiddle, ImageHigh] = Field(...)
     # like 2018

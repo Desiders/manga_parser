@@ -2,7 +2,8 @@ from abc import ABC
 from typing import Optional
 
 from manga_parser.client.base import Client, Response
-from manga_parser.exceptions.client import DefaultClientNotInstalled
+from manga_parser.exceptions.client import (DefaultClientNotInstalled,
+                                            NeedPaymentForUsingSite)
 from manga_parser.exceptions.site import ManyRequests, SiteInternalServerError
 
 
@@ -18,7 +19,6 @@ class Requests(ABC):
          Requests(),
          Requests(httpx.Client()),
          Requests(requests.Session()),
-         Requests(aiohttp.ClientSession()),
          class ClientWrap:
              def get(self, **kwargs):
                  return requests.get(**kwargs)
@@ -53,6 +53,8 @@ class Requests(ABC):
         if status_code < 400:
             return None
         if 400 <= status_code < 500:
+            if status_code == 402:
+                raise NeedPaymentForUsingSite(NeedPaymentForUsingSite.__doc__)
             if status_code == 429:
                 raise ManyRequests(ManyRequests.__doc__)
         if status_code >= 500:
@@ -66,6 +68,8 @@ class Requests(ABC):
     ) -> Response:
         if method == "GET":
             response = self.client.get(url=url, **kwargs)
+        elif method == "POST":
+            response = self.client.post(url=url, **kwargs)
 
         self.handle_exceptions(response.status_code)
 

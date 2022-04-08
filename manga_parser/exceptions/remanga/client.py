@@ -11,11 +11,3 @@ class NeedAuthorizhationForViewManga(RemangaClientException):
     """
     The site required to be authorized for view the manga
     """
-
-
-class NeedPaymentForUsingSite(RemangaClientException):
-    """
-    The site doesn't want to be parsed
-
-    Perhaps authorization will solve this exception.
-    """

@@ -5,10 +5,11 @@ from manga_parser.parsers.remanga import RemangaParser
 from manga_parser.requests.remanga import RemangaRequests
 from manga_parser.schemas.remanga import (Chapter, MangaBriefly, MangaHigh,
                                           MangaMedium, Page, PublisherHigh)
-from manga_parser.typehints.remanga import (AgeLimitTypes, BranchType,
-                                            CategoryTypes, ChapterOrUrlType,
-                                            GenreTypes, StatusTypes,
-                                            TitleTypeTypes)
+from manga_parser.typehints.remanga import (AgeLimitsType, BranchOrIdType,
+                                            CategoriesType,
+                                            ChapterOrIdOrUrlType, GenresType,
+                                            MangaOrUrlType, PublisherOrUrlType,
+                                            StatusesType, TitleTypesType)
 
 
 class RemangaController(Controller):
@@ -52,11 +53,11 @@ class RemangaController(Controller):
         offset: int = 0,
         limit: Optional[int] = None,
         primarily_new_manga: bool = True,
-        categories: CategoryTypes = None,
-        genres: GenreTypes = None,
-        statuses: StatusTypes = None,
-        title_types: TitleTypeTypes = None,
-        age_limits: AgeLimitTypes = None,
+        categories: CategoriesType = None,
+        genres: GenresType = None,
+        statuses: StatusesType = None,
+        title_types: TitleTypesType = None,
+        age_limits: AgeLimitsType = None,
     ) -> list[MangaMedium]:
         """
         Return the most new manga
@@ -110,11 +111,11 @@ class RemangaController(Controller):
         offset: int = 0,
         limit: Optional[int] = None,
         primarily_latest_updated_manga: bool = True,
-        categories: CategoryTypes = None,
-        genres: GenreTypes = None,
-        statuses: StatusTypes = None,
-        title_types: TitleTypeTypes = None,
-        age_limits: AgeLimitTypes = None,
+        categories: CategoriesType = None,
+        genres: GenresType = None,
+        statuses: StatusesType = None,
+        title_types: TitleTypesType = None,
+        age_limits: AgeLimitsType = None,
     ) -> list[MangaMedium]:
         """
         Return the most latest updated manga
@@ -168,11 +169,11 @@ class RemangaController(Controller):
         offset: int = 0,
         limit: Optional[int] = None,
         primarily_rating_manga: bool = True,
-        categories: CategoryTypes = None,
-        genres: GenreTypes = None,
-        statuses: StatusTypes = None,
-        title_types: TitleTypeTypes = None,
-        age_limits: AgeLimitTypes = None,
+        categories: CategoriesType = None,
+        genres: GenresType = None,
+        statuses: StatusesType = None,
+        title_types: TitleTypesType = None,
+        age_limits: AgeLimitsType = None,
     ) -> list[MangaMedium]:
         """
         Return the most rating manga
@@ -226,11 +227,11 @@ class RemangaController(Controller):
         offset: int = 0,
         limit: Optional[int] = None,
         primarily_liked_manga: bool = True,
-        categories: CategoryTypes = None,
-        genres: GenreTypes = None,
-        statuses: StatusTypes = None,
-        title_types: TitleTypeTypes = None,
-        age_limits: AgeLimitTypes = None,
+        categories: CategoriesType = None,
+        genres: GenresType = None,
+        statuses: StatusesType = None,
+        title_types: TitleTypesType = None,
+        age_limits: AgeLimitsType = None,
     ) -> list[MangaMedium]:
         """
         Return the most liked manga
@@ -284,11 +285,11 @@ class RemangaController(Controller):
         offset: int = 0,
         limit: Optional[int] = None,
         primarily_viewed_manga: bool = True,
-        categories: CategoryTypes = None,
-        genres: GenreTypes = None,
-        statuses: StatusTypes = None,
-        title_types: TitleTypeTypes = None,
-        age_limits: AgeLimitTypes = None,
+        categories: CategoriesType = None,
+        genres: GenresType = None,
+        statuses: StatusesType = None,
+        title_types: TitleTypesType = None,
+        age_limits: AgeLimitsType = None,
     ) -> list[MangaMedium]:
         """
         Return the most viewed manga
@@ -342,11 +343,11 @@ class RemangaController(Controller):
         offset: int = 0,
         limit: Optional[int] = None,
         primarily_count_chapters_manga: bool = True,
-        categories: CategoryTypes = None,
-        genres: GenreTypes = None,
-        statuses: StatusTypes = None,
-        title_types: TitleTypeTypes = None,
-        age_limits: AgeLimitTypes = None,
+        categories: CategoriesType = None,
+        genres: GenresType = None,
+        statuses: StatusesType = None,
+        title_types: TitleTypesType = None,
+        age_limits: AgeLimitsType = None,
     ) -> list[MangaMedium]:
         """
         Return the manga with most count chapters
@@ -399,11 +400,11 @@ class RemangaController(Controller):
         page: int = 1,
         offset: int = 0,
         limit: Optional[int] = None,
-        categories: CategoryTypes = None,
-        genres: GenreTypes = None,
-        statuses: StatusTypes = None,
-        title_types: TitleTypeTypes = None,
-        age_limits: AgeLimitTypes = None,
+        categories: CategoriesType = None,
+        genres: GenresType = None,
+        statuses: StatusesType = None,
+        title_types: TitleTypesType = None,
+        age_limits: AgeLimitsType = None,
     ) -> list[MangaMedium]:
         """
         Return the random manga
@@ -446,25 +447,26 @@ class RemangaController(Controller):
             limit=limit,
         )
 
-    def manga_info(self, url: str) -> MangaHigh:
+    def manga_info(self, manga_or_url: MangaOrUrlType) -> MangaHigh:
         """
         Return the manga's information
 
-        :url:
-         The url of the manga required to return the information.
+        :manga_or_url:
+         The manga required to return the information.
          You can transmit url and short url, for example:
           `https://remanga.org/manga/the_beginning_after_the_end`,
           `the_beginning_after_the_end`.
+         (Manga | Manga.url | Manga.short_url)
         """
         return self.parser.manga_info(
             response=self.requests.manga_info(
-                url=url,
+                manga_or_url=manga_or_url,
             ),
         )
 
     def manga_chapters(
         self,
-        branch: BranchType,
+        branch_or_id: BranchOrIdType,
         offset: int = 0,
         limit: Optional[int] = None,
         primarily_new_chapters: bool = True,
@@ -472,9 +474,10 @@ class RemangaController(Controller):
         """
         Return the manga's chapters
 
-        :branch:
+        :branch_or_id:
          The branch for return specifying the specific branch's chapters.
          Different teams can have different branches.
+         (Branch | Branch.id)
         :offset:
          The index of the manga's chapter to start with.
         :limit:
@@ -484,7 +487,7 @@ class RemangaController(Controller):
         """
         return self.parser.manga_chapters(
             response=self.requests.manga_chapters(
-                branch=branch,
+                branch_or_id=branch_or_id,
             ),
             offset=offset,
             limit=limit,
@@ -493,7 +496,7 @@ class RemangaController(Controller):
 
     def chapter_pages(
         self,
-        chapter_or_url: ChapterOrUrlType,
+        chapter_or_id_or_url: ChapterOrIdOrUrlType,
         offset: int = 0,
         limit: Optional[int] = None,
         primarily_first_pages: bool = True,
@@ -501,8 +504,12 @@ class RemangaController(Controller):
         """
         Return the chapter's pages
 
-        :chapter_or_url:
-         The url of the manga chapter to return the pages.
+        :chapter_or_id_or_url:
+         The chapter of the manga to return the pages.
+         You can transmit url and short url, for example:
+          `https://remanga.org/manga/the_beginning_after_the_end/ch59059`,
+          `ch59059`.
+         (Chapter | Chapter.id)
         :offset:
          The index of the chapter's page to start with.
         :limit:
@@ -512,22 +519,26 @@ class RemangaController(Controller):
         """
         return self.parser.chapter_pages(
             response=self.requests.chapter_pages(
-                chapter_or_url=chapter_or_url,
+                chapter_or_id_or_url=chapter_or_id_or_url,
             ),
             offset=offset,
             limit=limit,
             primarily_first_pages=primarily_first_pages,
         )
 
-    def publisher_info(self, url: str) -> PublisherHigh:
+    def publisher_info(
+        self,
+        publisher_or_url: PublisherOrUrlType,
+    ) -> PublisherHigh:
         """
         Return the publisher's information
 
-        :url:
-         The url of the publisher required to return the information.
+        :publisher_or_url:
+         The publisher required to return the information.
+         (Publisher | Publisher.url | Publisher.short_url)
         """
         return self.parser.publisher_info(
             response=self.requests.publisher_info(
-                url=url,
+                publisher_or_url=publisher_or_url,
             ),
         )

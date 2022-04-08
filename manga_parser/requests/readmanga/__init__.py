@@ -1,0 +1,1 @@
+from manga_parser.requests.readmanga.requests import ReadmangaRequests

@@ -1,16 +1,32 @@
+import logging
+import time
+
 from manga_parser import RemangaController, RemangaParser, RemangaRequests
 from manga_parser.parsers.remanga.helper import (age_limit_by_raw,
                                                  title_type_by_raw)
 
-remanga_controller = RemangaController(
+logger = logging.getLogger(__name__)
+
+remanga = RemangaController(
     requests=RemangaRequests(),
     parser=RemangaParser(),
 )
 
 
+def logging_execution_time(fn):
+    def wrap(*args, **kwargs):
+        start = time.monotonic()
+        fn(*args, **kwargs)
+        end = time.monotonic()
+
+        logger.info(f"execution time: {end - start} s.\n")
+    return wrap
+
+
 class TestRemangaControllerMethods:
+    @logging_execution_time
     def test_manga_search(self):
-        manga = remanga_controller.manga_search(
+        manga = remanga.manga_search(
             name="Клинок, рассекающий демонов",
             count=1,
         )
@@ -18,16 +34,17 @@ class TestRemangaControllerMethods:
         assert isinstance(manga, list)
         assert 0 <= len(manga) <= 1
 
-        manga = remanga_controller.manga_search(name="Клинок", count="10")
+        manga = remanga.manga_search(name="Клинок", count="10")
 
         assert isinstance(manga, list)
         assert 0 <= len(manga) <= 10
 
-        manga = remanga_controller.manga_search(name="Клинок")
+        manga = remanga.manga_search(name="Клинок")
 
         assert isinstance(manga, list)
         assert 0 <= len(manga) <= 1
 
+    @logging_execution_time
     def test_manga_new(self):
         manga_category_raw = "реинкарнация"
         manga_genre_id = 21
@@ -35,7 +52,7 @@ class TestRemangaControllerMethods:
         manga_age_limit_raw = "0+"
         manga_age_limit = age_limit_by_raw("16+")
 
-        manga = remanga_controller.manga_new(
+        manga = remanga.manga_new(
             page=1, offset=0, limit=None,
             primarily_new_manga=True,
             categories=[manga_category_raw],
@@ -61,7 +78,7 @@ class TestRemangaControllerMethods:
             }
             assert manga_title_type == now_manga.title_type
 
-        manga = remanga_controller.manga_new(
+        manga = remanga.manga_new(
             page=1, offset=0, limit=None,
             primarily_new_manga=False,
         )
@@ -74,28 +91,29 @@ class TestRemangaControllerMethods:
 
             assert now_manga.id < next_manga.id
 
-        manga_f = remanga_controller.manga_new(
+        manga_f = remanga.manga_new(
             page=1, offset=29, limit=10,
         )
 
-        manga_s = remanga_controller.manga_new(
+        manga_s = remanga.manga_new(
             page=2, offset=29, limit=40,
         )
 
         assert len(manga_f) == len(manga_s) == 1
 
-        manga_f = remanga_controller.manga_new(
+        manga_f = remanga.manga_new(
             page=1, limit=1,
             primarily_new_manga=False,
         )
 
-        manga_s = remanga_controller.manga_new(
+        manga_s = remanga.manga_new(
             page=2, limit=1,
             primarily_new_manga=True,
         )
 
         assert manga_f[0].id > manga_s[0].id
 
+    @logging_execution_time
     def test_manga_latest_updated(self):
         manga_category_raw = "реинкарнация"
         manga_genre_id = 21
@@ -103,7 +121,7 @@ class TestRemangaControllerMethods:
         manga_age_limit_raw = "0+"
         manga_age_limit = age_limit_by_raw("16+")
 
-        manga = remanga_controller.manga_latest_updated(
+        manga = remanga.manga_latest_updated(
             page=1, offset=0, limit=None,
             categories=[manga_category_raw],
             genres=[manga_genre_id],
@@ -124,16 +142,17 @@ class TestRemangaControllerMethods:
             }
             assert manga_title_type == now_manga.title_type
 
-        manga_f = remanga_controller.manga_latest_updated(
+        manga_f = remanga.manga_latest_updated(
             page=1, offset=29, limit=10,
         )
 
-        manga_s = remanga_controller.manga_latest_updated(
+        manga_s = remanga.manga_latest_updated(
             page=2, offset=29, limit=40,
         )
 
         assert len(manga_f) == len(manga_s) == 1
 
+    @logging_execution_time
     def test_manga_rating(self):
         manga_category_raw = "реинкарнация"
         manga_genre_id = 21
@@ -141,7 +160,7 @@ class TestRemangaControllerMethods:
         manga_age_limit_raw = "0+"
         manga_age_limit = age_limit_by_raw("16+")
 
-        manga = remanga_controller.manga_rating(
+        manga = remanga.manga_rating(
             page=1, offset=0, limit=None,
             primarily_rating_manga=True,
             categories=[manga_category_raw],
@@ -170,23 +189,24 @@ class TestRemangaControllerMethods:
             }
             assert manga_title_type == now_manga.title_type
 
-        manga = remanga_controller.manga_rating(
+        manga = remanga.manga_rating(
             page=1, offset=0, limit=None,
             primarily_rating_manga=False,
         )
 
         assert len(manga) == 30
 
-        manga_f = remanga_controller.manga_rating(
+        manga_f = remanga.manga_rating(
             page=1, offset=29, limit=10,
         )
 
-        manga_s = remanga_controller.manga_rating(
+        manga_s = remanga.manga_rating(
             page=2, offset=29, limit=40,
         )
 
         assert len(manga_f) == len(manga_s) == 1
 
+    @logging_execution_time
     def test_manga_liked(self):
         manga_category_raw = "реинкарнация"
         manga_genre_id = 21
@@ -194,7 +214,7 @@ class TestRemangaControllerMethods:
         manga_age_limit_raw = "0+"
         manga_age_limit = age_limit_by_raw("16+")
 
-        manga = remanga_controller.manga_liked(
+        manga = remanga.manga_liked(
             page=1, offset=0, limit=None,
             primarily_liked_manga=True,
             categories=[manga_category_raw],
@@ -220,7 +240,7 @@ class TestRemangaControllerMethods:
             }
             assert manga_title_type == now_manga.title_type
 
-        manga = remanga_controller.manga_liked(
+        manga = remanga.manga_liked(
             page=1, offset=0, limit=None,
             primarily_liked_manga=False,
         )
@@ -233,28 +253,29 @@ class TestRemangaControllerMethods:
 
             assert now_manga.liked < next_manga.liked
 
-        manga_f = remanga_controller.manga_liked(
+        manga_f = remanga.manga_liked(
             page=1, offset=29, limit=10,
         )
 
-        manga_s = remanga_controller.manga_liked(
+        manga_s = remanga.manga_liked(
             page=2, offset=29, limit=40,
         )
 
         assert len(manga_f) == len(manga_s) == 1
 
-        manga_f = remanga_controller.manga_liked(
+        manga_f = remanga.manga_liked(
             page=1, limit=1,
             primarily_liked_manga=False,
         )
 
-        manga_s = remanga_controller.manga_liked(
+        manga_s = remanga.manga_liked(
             page=2, limit=1,
             primarily_liked_manga=True,
         )
 
         assert manga_f[0].liked > manga_s[0].liked
 
+    @logging_execution_time
     def test_manga_viewed(self):
         manga_category_raw = "реинкарнация"
         manga_genre_id = 21
@@ -262,7 +283,7 @@ class TestRemangaControllerMethods:
         manga_age_limit_raw = "0+"
         manga_age_limit = age_limit_by_raw("16+")
 
-        manga = remanga_controller.manga_viewed(
+        manga = remanga.manga_viewed(
             page=1, offset=0, limit=None,
             primarily_viewed_manga=True,
             categories=[manga_category_raw],
@@ -288,7 +309,7 @@ class TestRemangaControllerMethods:
             }
             assert manga_title_type == now_manga.title_type
 
-        manga = remanga_controller.manga_viewed(
+        manga = remanga.manga_viewed(
             page=1, offset=0, limit=None,
             primarily_viewed_manga=False,
         )
@@ -301,28 +322,29 @@ class TestRemangaControllerMethods:
 
             assert now_manga.views < next_manga.views
 
-        manga_f = remanga_controller.manga_viewed(
+        manga_f = remanga.manga_viewed(
             page=1, offset=29, limit=10,
         )
 
-        manga_s = remanga_controller.manga_viewed(
+        manga_s = remanga.manga_viewed(
             page=2, offset=29, limit=40,
         )
 
         assert len(manga_f) == len(manga_s) == 1
 
-        manga_f = remanga_controller.manga_viewed(
+        manga_f = remanga.manga_viewed(
             page=1, limit=1,
             primarily_viewed_manga=False,
         )
 
-        manga_s = remanga_controller.manga_viewed(
+        manga_s = remanga.manga_viewed(
             page=2, limit=1,
             primarily_viewed_manga=True,
         )
 
         assert manga_f[0].views > manga_s[0].views
 
+    @logging_execution_time
     def test_manga_count_chapters(self):
         manga_category_raw = "реинкарнация"
         manga_genre_id = 21
@@ -330,7 +352,7 @@ class TestRemangaControllerMethods:
         manga_age_limit_raw = "0+"
         manga_age_limit = age_limit_by_raw("16+")
 
-        manga = remanga_controller.manga_count_chapters(
+        manga = remanga.manga_count_chapters(
             page=1, offset=0, limit=None,
             primarily_count_chapters_manga=True,
             categories=[manga_category_raw],
@@ -355,30 +377,34 @@ class TestRemangaControllerMethods:
             }
             assert manga_title_type == now_manga.title_type
 
-        manga = remanga_controller.manga_count_chapters(
+        manga = remanga.manga_count_chapters(
             page=1, offset=0, limit=None,
             primarily_count_chapters_manga=False,
         )
 
         assert len(manga) == 30
 
-        manga_f = remanga_controller.manga_count_chapters(
+        manga_f = remanga.manga_count_chapters(
             page=1, offset=29, limit=10,
         )
 
-        manga_s = remanga_controller.manga_count_chapters(
+        manga_s = remanga.manga_count_chapters(
             page=2, offset=29, limit=40,
         )
 
         assert len(manga_f) == len(manga_s) == 1
 
+    @logging_execution_time
     def test_manga_info(self):
-        manga_first = remanga_controller.manga_info(
-            url="https://remanga.org/manga/the_beginning_after_the_end",
+        manga_first = remanga.manga_info(
+            manga_or_url=(
+                "https://remanga.org/manga/"
+                "the_beginning_after_the_end"
+            ),
         )
 
-        manga_second = remanga_controller.manga_info(
-            url="the_beginning_after_the_end",
+        manga_second = remanga.manga_info(
+            manga_or_url="the_beginning_after_the_end",
         )
 
         assert manga_first.id == manga_second.id
@@ -405,9 +431,10 @@ class TestRemangaControllerMethods:
             for publisher in branch.publishers:
                 assert publisher in publishers
 
+    @logging_execution_time
     def test_manga_chapters(self):
-        manga_chapters = remanga_controller.manga_chapters(
-            branch=852,  # or `branch=manga.branches[i]`
+        manga_chapters = remanga.manga_chapters(
+            branch_or_id=852,  # or `branch=manga.branches[i]`
             offset=0, limit=5, primarily_new_chapters=True,
         )
 
@@ -432,13 +459,13 @@ class TestRemangaControllerMethods:
                 assert now_manga_chapter.upload_date < \
                        now_manga_chapter.free_date
 
-        manga_chapters_new = remanga_controller.manga_chapters(
-            branch=852, offset=0,
+        manga_chapters_new = remanga.manga_chapters(
+            branch_or_id=852, offset=0,
             limit=3, primarily_new_chapters=True,
         )
 
-        manga_chapters_old = remanga_controller.manga_chapters(
-            branch=852, offset=0,
+        manga_chapters_old = remanga.manga_chapters(
+            branch_or_id=852, offset=0,
             limit=3, primarily_new_chapters=False,
         )
 
@@ -447,29 +474,30 @@ class TestRemangaControllerMethods:
         ):
             manga_chapter_new.id != manga_chapter_old.id
 
-        manga_chapters_f = remanga_controller.manga_chapters(
-            branch=852, offset=0,
+        manga_chapters_f = remanga.manga_chapters(
+            branch_or_id=852, offset=0,
             limit=3, primarily_new_chapters=True,
         )
 
-        manga_chapters_s = remanga_controller.manga_chapters(
-            branch=852, offset=2,
+        manga_chapters_s = remanga.manga_chapters(
+            branch_or_id=852, offset=2,
             limit=1, primarily_new_chapters=True,
         )
 
         assert manga_chapters_f[2].id == manga_chapters_s[0].id
 
+    @logging_execution_time
     def test_chapter_pages(self):
-        chapter_pages_f = remanga_controller.chapter_pages(
-            chapter_or_url=59059,  # or `chapter_or_url=chapters[i]`
+        chapter_pages_f = remanga.chapter_pages(
+            chapter_or_id_or_url=59059,  # or `chapter_or_id_or_url=chapters[i]`
             offset=0, limit=3,
             primarily_first_pages=True,
         )
 
-        chapter_pages_s = remanga_controller.chapter_pages(
-            chapter_or_url=("https://remanga.org/manga/"
-                            "the_beginning_after_the_end/"
-                            "ch59059"),
+        chapter_pages_s = remanga.chapter_pages(
+            chapter_or_id_or_url=("https://remanga.org/manga/"
+                                  "the_beginning_after_the_end/"
+                                  "ch59059"),
             offset=1, limit=2,
             primarily_first_pages=True,
         )
@@ -478,8 +506,8 @@ class TestRemangaControllerMethods:
         assert chapter_pages_f[1].id == chapter_pages_s[0].id
         assert chapter_pages_f[2].id == chapter_pages_s[1].id
 
-        chapter_pages_t = remanga_controller.chapter_pages(
-            chapter_or_url="ch59059",
+        chapter_pages_t = remanga.chapter_pages(
+            chapter_or_id_or_url="ch59059",
             offset=1, limit=2,
             primarily_first_pages=False,
         )
@@ -487,13 +515,14 @@ class TestRemangaControllerMethods:
         for page_f, page_s in zip(chapter_pages_s, chapter_pages_t):
             assert page_f.id != page_s.id
 
+    @logging_execution_time
     def test_publisher_info(self):
-        publisher_f = remanga_controller.publisher_info(
-            url="https://remanga.org/team/assault_team",
+        publisher_f = remanga.publisher_info(
+            publisher_or_url="https://remanga.org/team/assault_team",
         )
 
-        publisher_s = remanga_controller.publisher_info(
-            url="assault_team",
+        publisher_s = remanga.publisher_info(
+            publisher_or_url="assault_team",
         )
 
         assert publisher_f.id == publisher_s.id
